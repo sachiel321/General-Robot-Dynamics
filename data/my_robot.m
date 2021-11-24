@@ -4,7 +4,7 @@ clear;
 deg = pi/180;
 dim = 6;
 dt = 0.01;
-loop = 1000;
+loop = 5;
 store = zeros(loop,50,50,dim*3); % (数据量，轨迹数，轨迹上的点数，参数)
 for m = 1:1:loop
     d_rand = rand(1,dim);
@@ -25,13 +25,14 @@ for m = 1:1:loop
     end
     
 
-    robot = SerialLink(L, 'name', 'Puma 560', ...
+    robot = SerialLink(L, 'name', 'robot', ...
         'manufacturer', 'Unimation');
+    robot.display
 %      
-% robot.plot(zeros(dim));
+    robot.plot(zeros(dim));
      % robot.teach;
     %% 0-1范围的，如何缩放？
-    for n = 1:1:50
+    for n = 1:1:2
         Q_rand =rand(1,dim) * 2*pi - pi;
         Qd_rand = rand(1,dim)*10 - 5;
         for j = 1:1:50
