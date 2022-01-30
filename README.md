@@ -20,9 +20,9 @@ facilitate different applications. We step further to investigate a
 new concept, “Gen2Real”, to transfer simulated, general models
 to physical, specific robots.
 
-We implemented the GRD model by PyTorch. You can find our trained model from [TrainedModel](https://drive.google.com/drive/folders/1BO6OSiVth9fmsIcNPjRarbaYIaGnPP_V?usp=sharing), which can be load by file `Robot_GPT.py`.
+We implemented the GRD model by PyTorch. You can find our trained model from [TrainedModel](https://drive.google.com/drive/folders/1BO6OSiVth9fmsIcNPjRarbaYIaGnPP_V?usp=sharing), which can be load by file `GRD.py`.
 
-- `Robot_GPT.py` is the entry program, in which you can change the model configs.
+- `GRD.py` is the entry program, in which you can change the model configs.
 - `core/model.py` contains the actual General model (the GPT part borrows from [Karpathy's](https://github.com/karpathy/minGPT) implementation)
 - `core/trainer.py` trains and test the model.
 - `data/my_robot.m` You can generate robot simulation data by this file. By modifying the file you can customize the random range of the robot.
