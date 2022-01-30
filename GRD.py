@@ -10,7 +10,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import Dataset
 
-from core.model import GPT, GPT_p2t, GPTConfig
+from core.model import GPT, GPT_p2t, GPTConfig, DistillGPTforTest, Distillp2tGPTforTest
 from core.trainer import Trainer,TrainerDDi_DiD, TrainerConfig  # train
 from core.utils import set_seed
 
@@ -19,6 +19,7 @@ def get_parser():
     parser.add_argument('--local_rank', type=int, help='node rank for distributed training')
     parser.add_argument('--mode_select', choices=['train','test'],default='test')
     parser.add_argument('--model_select', choices=['Dynamic','Reverse Dynamic','DiD','DDi'],default='Reverse Dynamic')
+    parser.add_argument('--large_model', type=bool, default=True)
     parser.add_argument('--batch_size', type=int, default=10)
     parser.add_argument('--learning_rate', type=float, default=2e-4)
     parser.add_argument('--learning_decay', type=bool, default=True)
@@ -99,10 +100,18 @@ if __name__ == '__main__':
     train_epochs = args.train_epochs
 
     if args.model_select == 'DDi' or args.model_select == 'DiD':
-        mconf = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=False)   # model configuration
-        model = GPT(mconf)
-        mconf_p2t = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=True)  # model configuration
-        model_p2t = GPT_p2t(mconf_p2t)
+        
+        if args.large_model:
+            mconf = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=False)   # model configuration
+            model = GPT(mconf)
+            mconf_p2t = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=True)  # model configuration
+            model_p2t = GPT_p2t(mconf_p2t)
+        else:
+            mconf = GPTConfig(49,n_layer=8, n_head=8, n_embd=64,only_last_layer=only_last_layer,is_DDi_DiD=False)
+            model = DistillGPTforTest(mconf)
+            mconf_p2t = GPTConfig(49,n_layer=8, n_head=8, n_embd=64,only_last_layer=only_last_layer,is_DDi_DiD=True)  # model configuration
+            model_p2t = Distillp2tGPTforTest(mconf_p2t)
+        
         # initialize a trainer instance and kick off training
         tconf = TrainerConfig(
             max_epochs=train_epochs, 
@@ -120,8 +129,12 @@ if __name__ == '__main__':
         )
         trainer = TrainerDDi_DiD(model,model_p2t, train_dataset, test_dataset, tconf)
     elif args.model_select == 'Dynamic':
-        mconf = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=False)   # model configuration
-        model = GPT(mconf)
+        if args.large_model:
+            mconf = GPTConfig(49,n_layer=64, n_head=8, n_embd=512,only_last_layer=only_last_layer,is_DDi_DiD=False)   # model configuration
+            model = GPT(mconf)
+        else:
+            mconf = GPTConfig(49,n_layer=8, n_head=8, n_embd=64,only_last_layer=only_last_layer,is_DDi_DiD=False)
+            model = DistillGPTforTest(mconf)
         # initialize a trainer instance and kick off training
         tconf = TrainerConfig(
             max_epochs=train_epochs, 
